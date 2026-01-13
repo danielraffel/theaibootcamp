@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cohort Zero | Vibe Coding Bootcamp</title>
+    
+    <!-- Typography Imports -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #FDFBF7; /* Cream / Substack-y background */
+            --text-main: #1C1C1C;
+            --text-muted: #555555;
+            --accent: #2563EB;
+            --border: #E5E5E5;
+            --font-serif: 'Merriweather', serif;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- LAYOUT UTILS --- */
+        .container {
+            max-width: 720px; 
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 700; color: var(--text-main); }
+        
+        h1 {
+            font-size: 2.5rem;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        h2 { font-size: 1.8rem; margin-top: 60px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        h3 { font-size: 1.3rem; margin-top: 40px; margin-bottom: 12px; }
+        h4 { font-size: 1.1rem; margin-bottom: 8px; font-weight: 600; font-family: var(--font-sans); }
+        
+        p { margin-bottom: 18px; font-size: 1.05rem; color: var(--text-muted); }
+        
+        .mono-tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 16px;
+            background: #fff;
+        }
+
+        /* --- SECTIONS --- */
+        .hero { margin-bottom: 50px; }
+        
+        .highlight-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        /* --- SCHEDULE --- */
+        .schedule-list {
+            list-style: none;
+            margin-top: 24px;
+        }
+        .schedule-item {
+            display: flex;
+            gap: 20px;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .schedule-time {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #888;
+            width: 130px;
+            flex-shrink: 0;
+        }
+        .schedule-content {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* --- CALENDAR LIST --- */
+        .event-list { list-style: none; margin-top: 20px; }
+        
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        .event-item:first-child { border-top: 1px solid var(--border); }
+        
+        .event-date { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; }
+        .event-time { font-family: var(--font-mono); font-size: 0.85rem; color: #888; margin-top: 4px; }
+        
+        .status-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            margin-right: 16px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .status-open { background: #DCFCE7; color: #166534; }
+        .status-full { background: #F3F4F6; color: #6B7280; text-decoration: line-through; }
+
+        .btn {
+            background: #111;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            padding: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        /* --- FORM --- */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+        }
+        .form-textarea { resize: vertical; min-height: 100px; }
+        .disclaimer { font-size: 0.8rem; color: #777; margin-top: 16px; line-height: 1.4; }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .event-item { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .event-actions { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+            .schedule-item { flex-direction: column; gap: 4px; }
+            .schedule-time { width: auto; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-family: var(--font-mono); font-weight: 700;">theaibootcamp.org</div>
+            <a href="#" onclick="openOrganizersModal(); return false;" style="font-size: 0.9rem; color: var(--text-muted); text-decoration: none; border-bottom: 1px solid #ddd; cursor: pointer;">About Organizers ↗</a>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <span class="mono-tag">SF &bull; Jan 2026 &bull; Private &bull; 10-12 Seats</span>
+            <h1>Cohort Zero: <br/>Vibe Coding Bootcamp</h1>
+            <p style="font-size: 1.25rem; color: var(--text-main); font-weight: 500;">
+                A private, invite-only immersion for senior professionals.
+            </p>
+            <p style="font-size: 1rem; color: var(--text-muted);">
+                Venue TBD, San Francisco, CA.
+            </p>
+        </section>
+
+        <!-- The Problem -->
+        <section>
+            <p>
+                Most people trying to “learn AI” are doing it alone, stuck in online courses they’ll never finish, distracted on noisy Discords, or overwhelmed by multiple accounts across various tools without guidance. 
+            </p>
+            <p>
+                What they’re missing isn’t content. It’s <strong>context</strong>: a focused environment, real-time feedback, and the energy of building alongside others like them. This is what AI can’t replicate: a live, in-person cohort experience.
+            </p>
+            <p>
+                No lectures, no fluff. Just learning by sitting in a room with others who are motivated like you to get better at prompting, using coding platforms to ship real projects, getting stuck and unstuck fast.
+            </p>
+        </section>
+
+        <!-- The Value Props -->
+        <section>
+            <h2>Each cohort becomes:</h2>
+            
+            <h3>1. A Private Alumni Network</h3>
+            <p>
+                This isn't networking in the transactional sense. It's something rarer: a shared starting point. Everyone in the room is admitting they don't know this yet. That vulnerability creates trust. And that trust becomes the foundation for real collaboration down the road.
+            </p>
+
+            <h3>2. A Recruiting Pipeline</h3>
+            <p>
+                What AI-native companies actually care about is <strong>demonstrated fluency</strong>. Can you actually build something? Can you prompt your way through a problem? Do you know when to trust the output and when to push back?
+            </p>
+            <p>
+                We look for people who've put in the reps. Not people who watched a webinar, but people who've sat in the discomfort of learning something new and come out the other side with real capability.
+            </p>
+
+            <h3>3. Frontline Intelligence</h3>
+            <p>
+                Direct insight into the tech stacks, internal pain points, and automation wishlists of top-tier companies. It's the unfiltered reality of what's actually happening inside companies right now:
+            </p>
+            <ul style="margin-left: 20px; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+                <li style="margin-bottom: 8px;">What tools are collecting dust?</li>
+                <li style="margin-bottom: 8px;">Where are the bottlenecks in every sprint?</li>
+                <li style="margin-bottom: 8px;">What manual processes are driving people crazy?</li>
+            </ul>
+        </section>
+
+        <!-- Goal & Why Now -->
+        <div class="highlight-box">
+            <h4 style="text-transform: uppercase; font-size: 0.8rem; color: #888; font-family: var(--font-mono);">The Goal</h4>
+            <p style="margin-bottom: 24px; color: #000;">
+                Equip professionals with AI fluency to become internal champions who can effectively integrate AI tools and practices within their organizations.
+            </p>
+
+            <h4 style="text-transform: uppercase; font-size: 0.8rem; color: #888; font-family: var(--font-mono);">Why Now?</h4>
+            <p style="margin-bottom: 0; color: #000;">
+                AI fluency is no longer optional, it’s the new baseline for modern work. We’re in a critical window where the tools are powerful but still emerging. The next 12–18 months will define who leads in this new era, and who gets left behind.
+            </p>
+        </div>
+
+        <!-- Curriculum -->
+        <section>
+            <h2>Curriculum Overview</h2>
+            <ul class="schedule-list">
+                <li class="schedule-item">
+                    <span class="schedule-time">09:00 - 09:30</span>
+                    <span class="schedule-content">Set up & Context</span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">09:45 - 10:30</span>
+                    <span class="schedule-content">Prompt Engineering</span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">11:00 - 12:30</span>
+                    <span class="schedule-content">Live Coding I <span style="font-weight:400; color:#666;">(Cursor, Replit, Lovable)</span></span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">12:30 - 01:30</span>
+                    <span class="schedule-content">Lunch + Peer Demos</span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">01:30 - 03:00</span>
+                    <span class="schedule-content">Live Coding II <span style="font-weight:400; color:#666;">(Internal bots, APIs)</span></span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">03:00 - 04:30</span>
+                    <span class="schedule-content">Team Challenge: Build Something in 90 Mins</span>
+                </li>
+                <li class="schedule-item">
+                    <span class="schedule-time">04:30 - 05:00</span>
+                    <span class="schedule-content">Rapid Shareouts + Debrief</span>
+                </li>
+            </ul>
+            <p style="margin-top: 15px; font-size: 0.9rem; font-style: italic;">
+                Bonus: Building Internal Tools with AI (Notion, Slack bots, workflows)
+            </p>
+        </section>
+
+        <!-- Calendar -->
+        <section id="schedule">
+            <h2>Upcoming Sessions</h2>
+            <p style="margin-bottom: 30px;">Spots are limited. Commitment is mandatory.</p>
+            
+            <div class="event-list">
+                <!-- Event 1 -->
+                <div class="event-item">
+                    <div>
+                        <div class="event-date">Monday, Jan 26</div>
+                        <div class="event-time">09:00 AM - 05:00 PM PST</div>
+                    </div>
+                    <div class="event-actions">
+                        <span class="status-badge status-open">3 Spots Left</span>
+                        <button class="btn" onclick="openModal('Monday, Jan 26')">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Event 2 -->
+                <div class="event-item">
+                    <div>
+                        <div class="event-date">Wednesday, Jan 28</div>
+                        <div class="event-time">09:00 AM - 05:00 PM PST</div>
+                    </div>
+                    <div class="event-actions">
+                        <span class="status-badge status-open">Open</span>
+                        <button class="btn" onclick="openModal('Wednesday, Jan 28')">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Event 3 -->
+                <div class="event-item">
+                    <div style="opacity: 0.5;">
+                        <div class="event-date">Friday, Jan 30</div>
+                        <div class="event-time">09:00 AM - 05:00 PM PST</div>
+                    </div>
+                    <div class="event-actions">
+                        <span class="status-badge status-full">Full</span>
+                        <button class="btn" disabled>Waitlist</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer style="margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); font-size: 0.9rem; color: #999;">
+            &copy; 2026 The AI Bootcamp. San Francisco, CA.
+        </footer>
+    </div>
+
+    <!-- Application Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+
+            <h3 style="margin-bottom: 10px;">Request Invitation</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 24px;">
+                 Applying for Cohort Zero: <strong id="selected-date-display">Date</strong>
+            </p>
+
+            <form id="application-form" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-input" required placeholder="Jane Doe">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" required placeholder="jane@company.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">LinkedIn URL</label>
+                    <input type="url" name="linkedin" class="form-input" required placeholder="linkedin.com/in/jane">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Why do you want to join this cohort?</label>
+                    <textarea name="reason" class="form-textarea" required placeholder="I'm looking to build..."></textarea>
+                </div>
+
+                <div class="disclaimer">
+                    <strong>The Commitment:</strong> If selected, you will receive a link to pay a $100 reservation fee. This ensures you show up. The fee is non-refundable within 48 hours of the event.
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Submit Application</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Organizers Modal -->
+    <div class="modal-overlay" id="organizers-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeOrganizersModal()">&times;</button>
+
+            <h3 style="margin-bottom: 24px;">About the Organizers</h3>
+
+            <!-- Andrea Funsten -->
+            <div style="margin-bottom: 32px;">
+                <h4 style="margin-bottom: 8px;">
+                    <a href="https://www.linkedin.com/in/andreafunsten/" target="_blank" style="color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border);">Andrea Funsten</a>
+                </h4>
+                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Based in San Francisco, Andrea has experience across multiple startups and is engaged with the venture capital and startup ecosystem. She studied at the University of Pennsylvania and has published thought leadership on venture capital and entrepreneurship.
+                </p>
+            </div>
+
+            <!-- Daniel Raffel -->
+            <div>
+                <h4 style="margin-bottom: 8px;">
+                    <a href="https://danielraffel.me/about/" target="_blank" style="color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--border);">Daniel Raffel</a>
+                </h4>
+                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Ex-Googler and startup founder with over 15 years as a product lead at Google, where he launched Nest Home & Away and Google Home Automations. He also founded Snapguide and was part of the team that created <a href="https://retool.com/pipes" target="_blank" style="color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent);">Yahoo Pipes</a>, one of the pioneering visual programming platforms.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIC ---
+        const modal = document.getElementById('modal');
+        const organizersModal = document.getElementById('organizers-modal');
+        const dateDisplay = document.getElementById('selected-date-display');
+        const form = document.getElementById('application-form');
+
+        function openModal(dateString) {
+            dateDisplay.textContent = dateString;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openOrganizersModal() {
+            organizersModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeOrganizersModal() {
+            organizersModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        organizersModal.addEventListener('click', (e) => {
+            if (e.target === organizersModal) closeOrganizersModal();
+        });
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = {
+                timestamp: new Date().toISOString(),
+                selectedDate: dateDisplay.textContent,
+                name: formData.get('name'),
+                email: formData.get('email'),
+                linkedin: formData.get('linkedin'),
+                reason: formData.get('reason')
+            };
+
+            // Update button state
+            btn.textContent = "Sending...";
+            btn.disabled = true;
+
+            // TODO: Replace with your actual Google Apps Script web app URL
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxn4_wBUbPltFQwfL6ZmTs5G6edSV1IMpMEjq2uE1JNr84hbOx5ngx6BeuEqCGBKsBk/exec';
+
+            // Send to Google Sheets
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                btn.textContent = "Application Sent!";
+                btn.style.background = "#166534";
+
+                setTimeout(() => {
+                    closeModal();
+                    btn.textContent = originalText;
+                    btn.style.background = "#111";
+                    btn.disabled = false;
+                    form.reset();
+                    alert("Thanks. We'll be in touch shortly regarding your application.");
+                }, 1000);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                btn.textContent = "Application Sent!";
+                btn.style.background = "#166534";
+
+                setTimeout(() => {
+                    closeModal();
+                    btn.textContent = originalText;
+                    btn.style.background = "#111";
+                    btn.disabled = false;
+                    form.reset();
+                    alert("Thanks. We'll be in touch shortly regarding your application.");
+                }, 1000);
+            });
+        }
+    </script>
+</body>
+</html>
