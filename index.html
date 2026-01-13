@@ -211,12 +211,35 @@
         .form-textarea { resize: vertical; min-height: 100px; }
         .disclaimer { font-size: 0.8rem; color: #777; margin-top: 16px; line-height: 1.4; }
 
+        /* --- SPINNER --- */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 600px) {
             h1 { font-size: 2rem; }
             .event-item { flex-direction: column; align-items: flex-start; gap: 16px; }
             .event-actions { width: 100%; display: flex; justify-content: space-between; align-items: center; }
             .schedule-item { flex-direction: column; gap: 4px; }
             .schedule-time { width: auto; font-size: 0.8rem; }
+            .modal-content {
+                padding: 24px;
+                max-height: 90vh;
+                overflow-y: auto;
+                margin: 20px;
+            }
+            .mono-tag { font-size: 0.65rem; padding: 3px 6px; }
         }
     </style>
 </head>
@@ -384,13 +407,30 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">LinkedIn URL</label>
-                    <input type="url" name="linkedin" class="form-input" required placeholder="linkedin.com/in/jane">
+                    <label class="form-label">LinkedIn Profile</label>
+                    <input type="text" name="linkedin" class="form-input" required placeholder="linkedin.com/in/jane" pattern=".*linkedin\.com.*" title="Please enter your LinkedIn profile URL">
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Why do you want to join this cohort?</label>
-                    <textarea name="reason" class="form-textarea" required placeholder="I'm looking to build..."></textarea>
+                    <label class="form-label">Dietary Restrictions</label>
+                    <select name="dietary" id="dietary-select" class="form-input" required onchange="toggleDietaryOther()">
+                        <option value="">Select an option</option>
+                        <option value="None">No restrictions</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Gluten-free">Gluten-free</option>
+                        <option value="Other">Other (please specify)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="dietary-other-group" style="display: none;">
+                    <label class="form-label">Please specify</label>
+                    <input type="text" name="dietary_other" id="dietary-other-input" class="form-input" placeholder="e.g., Vegan, Halal, Kosher">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">What are you hoping to learn and why?</label>
+                    <textarea name="reason" class="form-textarea" required placeholder="I want to understand how to..."></textarea>
                 </div>
 
                 <div class="disclaimer">
@@ -467,6 +507,21 @@
             if (e.target === organizersModal) closeOrganizersModal();
         });
 
+        function toggleDietaryOther() {
+            const select = document.getElementById('dietary-select');
+            const otherGroup = document.getElementById('dietary-other-group');
+            const otherInput = document.getElementById('dietary-other-input');
+
+            if (select.value === 'Other') {
+                otherGroup.style.display = 'block';
+                otherInput.required = true;
+            } else {
+                otherGroup.style.display = 'none';
+                otherInput.required = false;
+                otherInput.value = '';
+            }
+        }
+
         function handleFormSubmit(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -474,17 +529,22 @@
 
             // Get form data
             const formData = new FormData(e.target);
+            const dietaryValue = formData.get('dietary');
+            const dietaryOther = formData.get('dietary_other');
+            const dietaryFinal = dietaryValue === 'Other' && dietaryOther ? dietaryOther : dietaryValue;
+
             const data = {
                 timestamp: new Date().toISOString(),
                 selectedDate: dateDisplay.textContent,
                 name: formData.get('name'),
                 email: formData.get('email'),
                 linkedin: formData.get('linkedin'),
+                dietary: dietaryFinal,
                 reason: formData.get('reason')
             };
 
-            // Update button state
-            btn.textContent = "Sending...";
+            // Update button state with spinner
+            btn.innerHTML = '<span class="spinner"></span>Sending...';
             btn.disabled = true;
 
             // TODO: Replace with your actual Google Apps Script web app URL
@@ -500,13 +560,15 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                btn.textContent = "Application Sent!";
-                btn.style.background = "#166534";
+                btn.textContent = "✓ Application Sent!";
+                btn.style.background = "#10B981";
+                btn.style.color = "#fff";
 
                 setTimeout(() => {
                     closeModal();
                     btn.textContent = originalText;
                     btn.style.background = "#111";
+                    btn.style.color = "#fff";
                     btn.disabled = false;
                     form.reset();
                     alert("Thanks. We'll be in touch shortly regarding your application.");
@@ -514,13 +576,15 @@
             })
             .catch((error) => {
                 console.error('Error:', error);
-                btn.textContent = "Application Sent!";
-                btn.style.background = "#166534";
+                btn.textContent = "✓ Application Sent!";
+                btn.style.background = "#10B981";
+                btn.style.color = "#fff";
 
                 setTimeout(() => {
                     closeModal();
                     btn.textContent = originalText;
                     btn.style.background = "#111";
+                    btn.style.color = "#fff";
                     btn.disabled = false;
                     form.reset();
                     alert("Thanks. We'll be in touch shortly regarding your application.");
