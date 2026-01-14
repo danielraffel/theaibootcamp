@@ -516,6 +516,18 @@
             if (e.target === organizersModal) closeOrganizersModal();
         });
 
+        // Close modals with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                if (modal.classList.contains('active')) {
+                    closeModal();
+                }
+                if (organizersModal.classList.contains('active')) {
+                    closeOrganizersModal();
+                }
+            }
+        });
+
         function toggleDietaryOther() {
             const select = document.getElementById('dietary-select');
             const otherGroup = document.getElementById('dietary-other-group');
